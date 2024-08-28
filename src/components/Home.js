@@ -1,13 +1,11 @@
 import React from "react";
-import Notes from './Notes'; // Corrected the path to import Notes component
+import Notes from './Notes'; // Import the Notes component
 
-const Home = () => {
+const Home = ({ showAlert }) => { // Receive showAlert as a prop
     return (
-       <div>
-
-        <Notes/>
-            </div>
-        
+        <div>
+            <Notes showAlert={showAlert} /> {/* Pass showAlert to Notes */}
+        </div>
     );
 };
 

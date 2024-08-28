@@ -1,7 +1,7 @@
 const express = require('express');
-const router = express.Router(); // Corrected 'express.router()' to 'express.Router()'
-const Notes = require('../models/Notes'); // Corrected the path to the Notes model
-const fetchUser = require('../middleware/fetchUser'); // Corrected 'var' to 'const'
+const router = express.Router();
+const Notes = require('../models/Notes');
+const fetchUser = require('../middleware/fetchUser');
 const { body, validationResult } = require('express-validator');
 
 // Route 1: Fetch all notes for the authenticated user
@@ -17,8 +17,8 @@ router.get('/fetchallnotes', fetchUser, async (req, res) => {
 
 // Route 2: Add a new note
 router.post('/addnotes', fetchUser, [
-    body('title', 'Enter a valid title').isLength({ min: 3 }),
-    body('description', 'Description must be at least 5 characters long').isLength({ min: 5 }),
+    body('title', 'Enter a valid title'),
+    body('description', 'Description must be at least 5 characters long'),
 ], async (req, res) => {
     // Get validation errors
     const errors = validationResult(req);
@@ -36,10 +36,10 @@ router.post('/addnotes', fetchUser, [
             user: req.user.id 
         });
 
-        const savedNote = await note.save(); // Save the note to the database
-        res.json(savedNote); // Send the saved note as a response
+        const savedNote = await note.save();
+        res.json(savedNote);
     } catch (error) {
-        console.error(error.message); // Fixed 'error.nessage' to 'error.message'
+        console.error(error.message);
         res.status(500).send("Internal Server Error");
     }
 });
@@ -93,4 +93,4 @@ router.delete('/deletenotes/:id', fetchUser, async (req, res) => {
     }
 });
 
-module.exports = router; // Corrected 'module.export' to 'module.exports'
+module.exports = router;

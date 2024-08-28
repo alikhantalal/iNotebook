@@ -1,47 +1,100 @@
-import React, { useState } from "react";
-import noteContext from "./noteContext";
+import React, { useState } from 'react';
+import noteContext from './noteContext';
 
 const NoteState = (props) => {
-    const notesInitial = [
-        {
-            "_id": "66c423cf4caf198b16e4e8e4",
-            "user": "66c3278f3037b0577bbb8ce9",
-            "title": "my title",
-            "description": "wake up early",
-            "date": "2024-08-20T05:04:15.782Z",
-            "__v": 0
-        },
-        // Add more initial notes if needed
-    ];
-    
-    const [notes, setNotes] = useState(notesInitial);
+    const host = "http://localhost:5000";
+    const [notes, setNotes] = useState([]);
+
+    // Get notes from the server
+    const getNotes = async () => {
+        try {
+            const response = await fetch(`${host}/api/notes/fetchallnotes`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'auth-token': localStorage.getItem('token')
+                }
+            });
+            const json = await response.json();
+            setNotes(Array.isArray(json) ? json : []);
+        } catch (error) {
+            console.error('Error fetching notes:', error);
+        }
+    };
 
     // Add a note
-    const addNote = (title, description, tag) => {
-        console.log("adding a new note");
-        const note = {
-            "_id": new Date().toISOString(), // Use a unique ID
-            "user": "66c3278f3037b0577bbb8ce9",
-            "title": title,
-            "description": description,
-            "date": new Date().toISOString(),
-            "__v": 0
-        };
-        setNotes([...notes, note]); // Create a new array with the new note
+    const addNote = async (title, description, tag) => {
+        try {
+            const response = await fetch(`${host}/api/notes/addnotes`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'auth-token': localStorage.getItem('token')
+                },
+                body: JSON.stringify({ title, description, tag })
+            });
+            const newNote = await response.json();
+            console.log("New Note Added:", newNote);
+            setNotes([...notes, newNote]); // Append the new note to the state
+        } catch (error) {
+            console.error('Error adding note:', error);
+        }
     };
 
     // Delete a note
-    const deleteNote = (id) => {
-        setNotes(notes.filter(note => note._id !== id));
+    const deleteNote = async (id) => {
+        try {
+            const response = await fetch(`${host}/api/notes/deletenotes/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'auth-token': localStorage.getItem('token')
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            // Remove the note from the state after successful deletion
+            setNotes(notes.filter(note => note._id !== id));
+        } catch (error) {
+            console.error('Error deleting note:', error);
+        }
     };
 
     // Edit a note
-    const editNote = (id, updatedNote) => {
-        setNotes(notes.map(note => note._id === id ? { ...note, ...updatedNote } : note));
+    const editNote = async (id, { title, description, tag }) => {
+        if (!id) {
+            console.error('Note ID is missing');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${host}/api/notes/updatenotes/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'auth-token': localStorage.getItem('token')
+                },
+                body: JSON.stringify({ title, description, tag })
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const updatedNote = await response.json();
+
+            // Update the note in the state
+            setNotes(notes.map(note => note._id === id ? updatedNote : note));
+        } catch (error) {
+            console.error('Error updating note:', error);
+        }
     };
 
     return (
-        <noteContext.Provider value={{ notes, addNote, deleteNote, editNote }}>
+        <noteContext.Provider value={{ notes, addNote, deleteNote, editNote, getNotes }}>
             {props.children}
         </noteContext.Provider>
     );

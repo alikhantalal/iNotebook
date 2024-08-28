@@ -1,8 +1,17 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
-const Navbar = () => {
+const Navbar = ({ showAlert }) => {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const token = localStorage.getItem('token');
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    showAlert('Logged out successfully', 'success');
+    // Redirect to login page
+    navigate('/login', { replace: true }); // Use replace to avoid adding to history stack
+  };
 
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -20,9 +29,15 @@ const Navbar = () => {
               <Link className={`nav-link ${pathname === '/about' ? 'active' : ''}`} to="/about">About</Link>
             </li>
           </ul>
-          <form className="d-flex" role="search">
-            <input className="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
-            <button className="btn btn-outline-success" type="submit">Search</button>
+          <form className="d-flex">
+            {!token ? (
+              <>
+                <Link className="btn btn-primary mx-2" to='/login' role="button">Login</Link>
+                <Link className="btn btn-primary mx-2" to='/signup' role="button">Sign Up</Link>
+              </>
+            ) : (
+              <button className="btn btn-danger mx-2" onClick={handleLogout}>Logout</button>
+            )}
           </form>
         </div>
       </div>
