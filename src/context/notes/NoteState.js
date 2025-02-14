@@ -6,22 +6,23 @@ const NoteState = (props) => {
     const [notes, setNotes] = useState([]);
 
     // Get notes from the server
-    const getNotes = async () => {
-        try {
-            const response = await fetch(`${host}/api/notes/fetchallnotes`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'auth-token': localStorage.getItem('token')
-                }
-            });
-            const json = await response.json();
-            setNotes(Array.isArray(json) ? json : []);
-        } catch (error) {
-            console.error('Error fetching notes:', error);
+    const getNotes = async (page = 1, limit = 5) => {
+        const response = await fetch(`/api/notes/fetchallnotes?page=${page}&limit=${limit}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'auth-token': localStorage.getItem('token')
+            }
+        });
+    
+        const data = await response.json();
+        if (response.ok) {
+            setNotes(data.notes);
+        } else {
+            console.error("Error fetching notes:", data);
         }
     };
-
+    
     // Add a note
     const addNote = async (title, description, tag) => {
         try {

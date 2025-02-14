@@ -29,6 +29,7 @@ const Navbar = ({ showAlert }) => {
               <Link className={`nav-link ${pathname === '/about' ? 'active' : ''}`} to="/about">About</Link>
             </li>
           </ul>
+          
           <form className="d-flex">
             {!token ? (
               <>

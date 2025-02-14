@@ -7,14 +7,31 @@ const { body, validationResult } = require('express-validator');
 // Route 1: Fetch all notes for the authenticated user
 router.get('/fetchallnotes', fetchUser, async (req, res) => {
     try {
-        const notes = await Notes.find({ user: req.user.id });
-        res.json(notes);
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 4;
+        const startIndex = (page - 1) * limit;
+
+        console.log(`Fetching notes for user: ${req.user.id}`);
+        console.log(`Page: ${page}, Limit: ${limit}, StartIndex: ${startIndex}`);
+
+        const notes = await Notes.find({ user: req.user.id })
+            .skip(startIndex)
+            .limit(limit);
+
+        const totalNotes = await Notes.countDocuments({ user: req.user.id });
+
+        console.log(`Total Notes: ${totalNotes}, Notes Fetched: ${notes.length}`);
+
+        res.json({
+            totalPages: Math.ceil(totalNotes / limit),
+            currentPage: page,
+            notes
+        });
     } catch (error) {
         console.error(error.message);
         res.status(500).send("Internal Server Error");
     }
 });
-
 // Route 2: Add a new note
 router.post('/addnotes', fetchUser, [
     body('title', 'Enter a valid title'),

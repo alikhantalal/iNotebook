@@ -20,6 +20,15 @@ const Notes = (props) => {
     const [currentNote, setCurrentNote] = useState(null);
     const [showModal, setShowModal] = useState(false);
 
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(1);
+    const notesPerPage = 4; // Adjust this value as needed
+
+    // Calculate the indices for the current page
+    const indexOfLastNote = currentPage * notesPerPage;
+    const indexOfFirstNote = indexOfLastNote - notesPerPage;
+    const currentNotes = notes.slice(indexOfFirstNote, indexOfLastNote);
+
     const handleShow = (note) => {
         setCurrentNote(note);
         setShowModal(true);
@@ -44,6 +53,19 @@ const Notes = (props) => {
             } catch (error) {
                 props.showAlert("Failed to update note", "danger");
             }
+        }
+    };
+
+    // Pagination logic
+    const handleNextPage = () => {
+        if (currentPage < Math.ceil(notes.length / notesPerPage)) {
+            setCurrentPage(prevPage => prevPage + 1);
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(prevPage => prevPage - 1);
         }
     };
 
@@ -110,10 +132,16 @@ const Notes = (props) => {
 
             <div className="row my-3">
                 <h2>Your Notes</h2>
-                {notes.length === 0 && 'No notes to display'}
-                {notes.map((note) => (
+                {currentNotes.length === 0 && 'No notes to display'}
+                {currentNotes.map((note) => (
                     <Noteitem key={note._id} note={note} updateNote={handleShow} deleteNote={deleteNote} showAlert={props.showAlert} />
                 ))}
+            </div>
+
+            {/* Pagination controls */}
+            <div className="d-flex justify-content-between">
+                <button className="btn btn-primary" onClick={handlePrevPage} disabled={currentPage === 1}>Previous</button>
+                <button className="btn btn-primary" onClick={handleNextPage} disabled={currentPage >= Math.ceil(notes.length / notesPerPage)}>Next</button>
             </div>
         </>
     );
